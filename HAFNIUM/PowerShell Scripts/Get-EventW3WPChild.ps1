@@ -51,8 +51,7 @@ begin {
 process {
     $Filter = @{
         Id=4688;
-        #ParentProcessName='C:\Windows\System32\inetsrv\w3wp.exe'
-        ParentProcessName='C:\Windows\System32\SearchIndexer.exe'
+        ParentProcessName='C:\Windows\System32\inetsrv\w3wp.exe'
     }
     if ($Params -contains "Path") {
         $Filter.Add("Path",$Path) | Out-Null
