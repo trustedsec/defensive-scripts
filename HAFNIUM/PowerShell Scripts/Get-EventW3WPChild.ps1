@@ -18,7 +18,7 @@
 .OUTPUTS
     PSObject
 .NOTES
-    General notes
+    Author: Carlos Perez, carlos.perez@trustedsec.com
 #>
 [CmdletBinding(DefaultParameterSetName="Local")]
 param (
