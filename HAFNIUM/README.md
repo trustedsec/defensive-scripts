@@ -8,7 +8,7 @@ groups.
 
 The following queries are for use with Microsoft LogParser 2.2. A UI like LogParser Studio or Log Parser Lizard is recomended. 
 
-| File          | Descriptio     
+| File          | Description  |     
 | :-------------: |------------|
 | hafniun_exploit_attempt.sql | Query for W3SVC1 log files for exploitation attemps where a .js file is created as part of the exploit.|
 | hafniun_malicious_action_example.sql | Example query for W3SVC1 log that checks for exploit attempt, known bad IPs and common WebShells.|
@@ -17,3 +17,12 @@ The following queries are for use with Microsoft LogParser 2.2. A UI like LogPar
 | search_by_ip.sql | Query for W3SVC1 log files for known bad IP Addresses.|
 | suspicious_useragents.sql |Query for W3SVC1 log files to find common user-agents used by automated scripts|
 | unique_useragents.sql | Query for W3SVC1 log files to get a list of user-agents and the number of times used.|
+
+# PowerShell Scripts
+
+The following PowerhShell 7 scripts leverage Get-WinEvent with the EventData filtering capability.
+
+| File            | Description |
+| :-------------: |-------------|
+| Get-EventW3WPChild.ps1 | Script takes advantage of the Get-WinEvent cmdlet capability in PS Core to filter for event fields to look for child processes of w3wp.exe. |
+ 
