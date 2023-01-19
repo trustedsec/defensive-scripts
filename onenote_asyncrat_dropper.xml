@@ -1,0 +1,110 @@
+<Sysmon schemaversion="4.83">
+  <HashAlgorithms>sha256</HashAlgorithms>
+   <EventFiltering>
+      <RuleGroup name="" groupRelation="or">
+          <ImageLoad onmatch="include">
+              <!--Detect execution of HTA using the IE Javascript engine to bypass AMSI-->
+              <!--Note: Rule placed before Windows Scripting to ensure it triggers on this on case any other component is used.-->
+              <Rule groupRelation="and">
+                <ImageLoaded name="technique_id=T1170,technique_name=MSHTA with AMSI Bypass" condition="end with">jscript9.dll</ImageLoaded>
+                <Image condition="end with">mshta.exe</Image>
+              </Rule>
+              <!--Capture components used by malicious macros and scripts.-->
+              <Rule groupRelation="or">
+                <ImageLoaded name="technique_id=T1064,technique_name=Windows Scripting Host Component" condition="end with">wshom.ocx</ImageLoaded>
+                <ImageLoaded condition="end with">scrrun.dll</ImageLoaded>
+                <ImageLoaded condition="end with">vbscript.dll</ImageLoaded>
+              </Rule>
+              <!--Check for loading of the PowerShell engine-->
+              <Rule groupRelation="or">
+                <ImageLoaded name="technique_id=T1086,technique_name=PowerShell Engine" condition="end with">System.Management.Automation.ni.dll</ImageLoaded>
+                <ImageLoaded condition="end with">System.Management.Automation.dll</ImageLoaded>
+              </Rule>
+              <!--Detect the Squiblydoo technique-->
+              <Rule groupRelation="or">
+                 <ImageLoaded name="technique_id=T1117,technique_name=Regsvr32" condition="end with">scrobj.dll</ImageLoaded>
+              </Rule>
+            </ImageLoad>
+        </RuleGroup>
+        <RuleGroup name="" groupRelation="or">
+            <FileCreate onmatch="include">
+                <!-- Detect Dangerous File Type Creation -->
+                <Rule groupRelation="or">
+                    <TargetFilename name="technique_id=T1170,technique_name=Mshta" condition="end with">.hta</TargetFilename>
+                </Rule>
+
+                <Rule groupRelation="or">
+                    <TargetFilename name="technique_id=T1064,technique_name=Scripting" condition="end with">.bat</TargetFilename> <!--Batch scripting-->
+                    <TargetFilename condition="end with">.cmd</TargetFilename> <!--Batch scripting | Credit @ion-storm -->
+                    <TargetFilename condition="end with">.ps1</TargetFilename> <!--PowerShell-->
+                    <TargetFilename condition="end with">.ps2</TargetFilename> <!--PowerShell-->
+                    <TargetFilename condition="end with">.jse</TargetFilename> <!--Registry File-->
+                    <TargetFilename condition="end with">.vb</TargetFilename> <!--VisualBasicScripting files-->
+                    <TargetFilename condition="end with">.vbe</TargetFilename> <!--VisualBasicScripting files-->
+                    <TargetFilename condition="end with">.vbs</TargetFilename> <!--VisualBasicScripting files-->
+                </Rule>
+
+                <!-- Detect ClickOnce -->
+                <Rule groupRelation="or">
+                    <TargetFilename name="ClickOnce File Execution" condition="end with">.application</TargetFilename>        <TargetFilename condition="end with">.appref-ms</TargetFilename>
+                </Rule>
+
+                <!-- MSBuild -->
+                <Rule groupRelation="or">
+                    <TargetFilename name="technique_id=T1127,technique_name=Trusted Developer Utilities" condition="end with">.*proj</TargetFilename><!--Microsoft:MSBuild:Script More information: https://twitter.com/subTee/status/885919612969394177-->
+                    <TargetFilename condition="end with">.sln</TargetFilename>
+                </Rule>
+
+                <!-- Macro File Creation -->
+                <Rule groupRelation="or">
+                    <TargetFilename name="Microsoft:Office: Macro" condition="end with">.docm</TargetFilename>
+                    <TargetFilename condition="end with">.pptm</TargetFilename>
+                    <TargetFilename condition="end with">.xlsm</TargetFilename>
+                    <TargetFilename condition="end with">.xlm</TargetFilename>
+                    <TargetFilename condition="end with">.dotm</TargetFilename>
+                    <TargetFilename condition="end with">.xltm</TargetFilename>
+                    <TargetFilename condition="end with">.potm</TargetFilename>
+                    <TargetFilename condition="end with">.ppsm</TargetFilename>
+                    <TargetFilename condition="end with">.sldm</TargetFilename>
+                    <TargetFilename condition="end with">.xlam</TargetFilename>
+                    <TargetFilename condition="end with">.xla</TargetFilename>
+                </Rule>
+
+                <!-- DotNettoJS UsageLog -->
+                <Rule groupRelation="or">
+                    <TargetFilename name="technique_id=1218,technique_name=DotnettoJs" condition="contains">AppData\Local\Microsoft\CLR_v2.0\UsageLogs\</TargetFilename><!--Dotnet v2 binary started-->
+                    <TargetFilename condition="end with">\UsageLogs\cscript.exe.log</TargetFilename>
+                    <TargetFilename condition="end with">\UsageLogs\wscript.exe.log</TargetFilename>
+                    <TargetFilename condition="end with">\UsageLogs\wmic.exe.log</TargetFilename>
+                    <TargetFilename condition="end with">\UsageLogs\mshta.exe.log</TargetFilename>
+                    <TargetFilename condition="end with">\UsageLogs\svchost.exe.log</TargetFilename>
+                    <TargetFilename condition="end with">\UsageLogs\regsvr32.exe.log</TargetFilename>
+                    <TargetFilename condition="end with">\UsageLogs\rundll32.exe.log</TargetFilename>
+                </Rule>
+            </FileCreate>
+        </RuleGroup>
+        <FileBlockExecutable onmatch="include">
+            <!-- Primary -->
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">excel.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">winword.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">powerpnt.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">outlook.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">msaccess.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">mspub.exe</Image>
+            
+            <!-- Scripting Engines -->
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">powershell.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">mshta.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">cscript.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">wscript.exe</Image>
+
+            <!-- LOLBins -->
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">certutil.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">esenutl.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">desktopimgdownldr.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">regsvr32.exe</Image>
+            <Image name="technique_id=T1105,technique_name=Ingress Tool Transfer" condition="image">Odbcconf.exe</Image>
+      </FileBlockExecutable>
+    </RuleGroup>
+    </EventFiltering>
+</Sysmon>
