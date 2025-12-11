@@ -1,0 +1,65 @@
+# Monitor execution of reconnaissance commands commonly used post-exploitation
+-w /usr/bin/whoami -p x -k recon_commands
+-w /usr/bin/id -p x -k recon_commands
+-w /usr/bin/uname -p x -k recon_commands
+-w /bin/hostname -p x -k recon_commands
+
+# Watch for unauthorized access to sensitive files
+-w /etc/passwd -p r -k passwd_access
+-w /etc/shadow -p r -k shadow_access
+-w /root/.ssh/ -p wa -k ssh_key_access
+-w /home/*/.ssh/ -p wa -k ssh_key_access
+
+# Monitor modifications to shell configuration files (persistence technique)
+-w /root/.bashrc -p wa -k shell_config_change
+-w /root/.bash_profile -p wa -k shell_config_change
+-w /root/.profile -p wa -k shell_config_change
+-w /root/.zshrc -p wa -k shell_config_change
+-w /root/.zprofile -p wa -k shell_config_change
+-w /home/*/.bashrc -p wa -k shell_config_change
+-w /home/*/.bash_profile -p wa -k shell_config_change
+-w /home/*/.profile -p wa -k shell_config_change
+-w /home/*/.zshrc -p wa -k shell_config_change
+-w /home/*/.zprofile -p wa -k shell_config_change
+-w /etc/profile -p wa -k shell_config_change
+-w /etc/bash.bashrc -p wa -k shell_config_change
+-w /etc/zsh/zshrc -p wa -k shell_config_change
+
+# Track cron job creation and modification (common persistence mechanism)
+-w /etc/crontab -p wa -k cron_modification
+-w /etc/cron.d/ -p wa -k cron_modification
+-w /etc/cron.daily/ -p wa -k cron_modification
+-w /etc/cron.hourly/ -p wa -k cron_modification
+-w /etc/cron.monthly/ -p wa -k cron_modification
+-w /etc/cron.weekly/ -p wa -k cron_modification
+-w /var/spool/cron/ -p wa -k cron_modification
+-w /var/spool/cron/crontabs/ -p wa -k cron_modification
+
+# Monitor crontab command usage
+-w /usr/bin/crontab -p x -k crontab_execution
+
+# Monitor suspicious file writes in common staging locations
+-w /tmp/ -p wa -k tmp_writes
+-w /var/tmp/ -p wa -k tmp_writes
+-w /dev/shm/ -p wa -k shm_writes
+
+# Track spawning of shells by Node.js processes (adjust path to your Node installation)
+-a exit,always -F arch=b64 -S execve -F exe=/usr/bin/node -k node_shell_spawn
+
+# Monitor attempts to access cloud metadata services
+-w /proc/net/arp -p r -k cloud_metadata
+-a always,exit -F arch=b64 -S socket -F a0=2 -F success=1 -k outbound_connection
+
+# Watch for common post-exploitation tools
+-w /usr/bin/nc -p x -k netcat_exec
+-w /usr/bin/ncat -p x -k netcat_exec
+-w /usr/bin/curl -p x -k web_tools
+-w /usr/bin/wget -p x -k web_tools
+
+# Monitor base64 operations (often used for payload encoding)
+-w /usr/bin/base64 -p x -k encoding_tools
+
+# Watch for systemd service manipulation (another persistence technique)
+-w /etc/systemd/system/ -p wa -k systemd_modification
+-w /usr/lib/systemd/system/ -p wa -k systemd_modification
+-w /home/*/.config/systemd/user/ -p wa -k systemd_user_modification
