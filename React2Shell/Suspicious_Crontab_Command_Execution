@@ -1,0 +1,36 @@
+title: Suspicious Crontab Command Execution Pattern
+id: a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d
+status: experimental
+description: Detects execution of crontab command with suspicious patterns indicating persistence establishment
+references:
+    - https://www.wiz.io/blog/nextjs-cve-2025-55182-react2shell-deep-dive
+author: TrustedSec
+date: 2025/12/10
+tags:
+    - attack.persistence
+    - attack.t1053.003
+logsource:
+    category: process_creation
+    product: linux
+detection:
+    selection_crontab:
+        Image|endswith: '/crontab'
+    selection_stdin:
+        CommandLine|contains:
+            - '-'
+            - 'echo'
+    selection_parent:
+        ParentImage|endswith:
+            - '/node'
+            - '/nodejs'
+            - '/bash'
+            - '/sh'
+    selection_user:
+        CommandLine|contains:
+            - '-u'
+    condition: selection_crontab and (selection_stdin or selection_parent) and not selection_user
+falsepositives:
+    - Legitimate cron job management scripts
+    - System administrators making routine changes
+    - Automated deployment and configuration tools
+level: medium
