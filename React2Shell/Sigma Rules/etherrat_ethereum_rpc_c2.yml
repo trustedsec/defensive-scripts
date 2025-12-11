@@ -1,0 +1,38 @@
+title: EtherRAT Ethereum RPC Communication Pattern
+id: e5f6a7b8-c9d0-4e5f-2a3b-4c5d6e7f8a9b
+status: experimental
+description: Detects EtherRAT malware using Ethereum smart contracts for C2 through parallel RPC endpoint queries
+references:
+    - https://www.bleepingcomputer.com/news/security/north-korean-hackers-exploit-react2shell-flaw-in-etherrat-malware-attacks/
+    - https://sysdig.com/blog/etherrat-malware-react2shell/
+author: TrustedSec
+date: 2025/12/10
+tags:
+    - attack.command_and_control
+    - attack.t1071.001
+    - attack.t1102.001
+logsource:
+    category: network_connection
+    product: linux
+detection:
+    selection_process:
+        Image|endswith:
+            - '/node'
+            - '/nodejs'
+    selection_ethereum_rpc:
+        DestinationHostname|contains:
+            - 'infura.io'
+            - 'alchemy.com'
+            - 'quicknode.com'
+            - 'ankr.com'
+            - 'publicnode.com'
+            - 'chainstack.com'
+            - 'blastapi.io'
+            - 'llamanodes.com'
+            - 'drpc.org'
+    timeframe: 10s
+    condition: selection_process and selection_ethereum_rpc | count(DestinationHostname) by Image > 3
+falsepositives:
+    - Legitimate Web3 or blockchain applications using multiple RPC providers
+    - Development environments testing Ethereum integrations
+level: critical

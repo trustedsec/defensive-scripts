@@ -1,0 +1,38 @@
+title: Multiple Linux Persistence Mechanisms Created Simultaneously
+id: a7b8c9d0-e1f2-4a5b-4c5d-6e7f8a9b0c1d
+status: experimental
+description: Detects creation of multiple persistence mechanisms in rapid succession, characteristic of EtherRAT malware deployment
+references:
+    - https://www.bleepingcomputer.com/news/security/north-korean-hackers-exploit-react2shell-flaw-in-etherrat-malware-attacks/
+author: TrustedSec
+date: 2025/12/10
+tags:
+    - attack.persistence
+    - attack.t1547.001
+    - attack.t1053.003
+logsource:
+    category: file_event
+    product: linux
+detection:
+    selection_systemd:
+        TargetFilename|contains: '.config/systemd/user/'
+        TargetFilename|endswith: '.service'
+    selection_cron:
+        TargetFilename|contains:
+            - '/var/spool/cron/'
+            - '/etc/cron'
+    selection_profile:
+        TargetFilename|endswith:
+            - '/.bashrc'
+            - '/.bash_profile'
+            - '/.profile'
+    selection_autostart:
+        TargetFilename|contains: '.config/autostart/'
+        TargetFilename|endswith: '.desktop'
+    timeframe: 60s
+    condition: (selection_systemd or selection_cron or selection_profile or selection_autostart) | count() by User > 2
+falsepositives:
+    - System configuration management tools (Ansible, Puppet, Chef)
+    - Initial system setup or user onboarding scripts
+    - Software installation routines
+level: high

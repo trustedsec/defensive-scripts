@@ -1,0 +1,26 @@
+title: AWS Metadata Service Access from Node.js Process
+id: d4e5f6a7-b8c9-4d5e-1f2a-3b4c5d6e7f8a
+status: experimental
+description: Detects attempts to access cloud metadata service (169.254.169.254) from Node.js processes, often used for privilege escalation after exploitation
+references:
+    - https://www.wiz.io/blog/nextjs-cve-2025-55182-react2shell-deep-dive
+author: TrustedSec
+date: 2025/12/10
+tags:
+    - attack.credential_access
+    - attack.t1552.005
+    - attack.privilege_escalation
+logsource:
+    category: network_connection
+    product: linux
+detection:
+    selection:
+        Image|endswith:
+            - '/node'
+            - '/nodejs'
+        DestinationIp: '169.254.169.254'
+    condition: selection
+falsepositives:
+    - Legitimate application operations requiring AWS credentials from instance metadata
+    - AWS SDK default behavior in containerized applications (review and validate)
+level: critical

@@ -1,0 +1,52 @@
+title: EtherRAT Malicious Script Download with Multiple Fallback Methods
+id: b8c9d0e1-f2a3-4b5c-5d6e-7f8a9b0c1d2e
+status: experimental
+description: Detects EtherRAT dropper attempting to download malicious shell script (s.sh) using curl, wget, or python3 as fallbacks in a loop pattern
+references:
+    - https://www.bleepingcomputer.com/news/security/north-korean-hackers-exploit-react2shell-flaw-in-etherrat-malware-attacks/
+author: TrustedSec
+date: 2025/12/10
+tags:
+    - attack.execution
+    - attack.t1059.004
+    - attack.command_and_control
+    - attack.t1105
+logsource:
+    category: process_creation
+    product: linux
+detection:
+    selection_curl:
+        Image|endswith: '/curl'
+        CommandLine|contains:
+            - 's.sh'
+            - '.sh'
+    selection_wget:
+        Image|endswith: '/wget'
+        CommandLine|contains:
+            - 's.sh'
+            - '.sh'
+    selection_python:
+        Image|endswith:
+            - '/python'
+            - '/python3'
+        CommandLine|contains:
+            - 'urllib'
+            - 'requests'
+            - 'http'
+    selection_parent:
+        ParentImage|endswith:
+            - '/node'
+            - '/nodejs'
+            - '/bash'
+            - '/sh'
+    selection_output:
+        CommandLine|contains:
+            - '/tmp/'
+            - '.local/share'
+    timeframe: 300s
+    condition: (selection_curl or selection_wget or selection_python) and selection_parent and selection_output | count() by ParentProcessId > 2
+falsepositives:
+    - Legitimate download scripts or automation tools
+    - Software update mechanisms
+    - Development and CI/CD pipelines (whitelist known-good processes)
+level: high

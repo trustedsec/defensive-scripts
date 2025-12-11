@@ -1,0 +1,38 @@
+title: Suspicious Node.js Runtime Download to Non-Standard Location
+id: f6a7b8c9-d0e1-4f5a-3b4c-5d6e7f8a9b0c
+status: experimental
+description: Detects download of Node.js runtime from nodejs.org to unusual locations, behavior associated with EtherRAT malware
+references:
+    - https://www.bleepingcomputer.com/news/security/north-korean-hackers-exploit-react2shell-flaw-in-etherrat-malware-attacks/
+author: TrustedSec
+date: 2025/12/10
+tags:
+    - attack.execution
+    - attack.t1059.007
+    - attack.defense_evasion
+    - attack.t1027
+logsource:
+    category: network_connection
+    product: linux
+detection:
+    selection_download:
+        DestinationHostname|contains: 'nodejs.org'
+        DestinationPort: 443
+    selection_process:
+        Image|endswith:
+            - '/curl'
+            - '/wget'
+            - '/python'
+            - '/python3'
+    selection_parent:
+        ParentImage|endswith:
+            - '/node'
+            - '/nodejs'
+            - '/bash'
+            - '/sh'
+    condition: selection_download and selection_process and selection_parent
+falsepositives:
+    - Legitimate installation or update of Node.js via package managers
+    - Node Version Manager (nvm) operations
+    - Automated deployment scripts (validate and whitelist known-good automation)
+level: high
