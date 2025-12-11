@@ -200,7 +200,7 @@ ls -la /etc/cron.hourly/
 ls -la /var/spool/cron/crontabs/
 ```
 
-## 🧪 Indicators of Compromise (IOCs)
+## Indicators of Compromise (IOCs) for Known Exploitation
 
 ### Behavioral Indicators
 
