@@ -1,0 +1,40 @@
+title: Shell Configuration File Modified by Node.js Process
+id: e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b
+status: experimental
+description: Detects modification of shell configuration files (.bashrc, .profile, etc.) by Node.js processes for persistence
+references:
+    - https://www.wiz.io/blog/nextjs-cve-2025-55182-react2shell-deep-dive
+author: TrustedSec
+date: 2025/12/10
+tags:
+    - attack.persistence
+    - attack.t1546.004
+    - attack.privilege_escalation
+logsource:
+    product: linux
+    service: auditd
+detection:
+    selection:
+        type: 'SYSCALL'
+        exe|endswith:
+            - '/node'
+            - '/nodejs'
+        name|endswith:
+            - '/.bashrc'
+            - '/.bash_profile'
+            - '/.profile'
+            - '/.zshrc'
+            - '/.zprofile'
+            - '/etc/profile'
+            - '/etc/bash.bashrc'
+            - '/etc/zsh/zshrc'
+        syscall:
+            - 'open'
+            - 'openat'
+            - 'write'
+    condition: selection
+falsepositives:
+    - Configuration management tools making legitimate changes
+    - Application initialization scripts
+    - User environment setup automation
+level: high
