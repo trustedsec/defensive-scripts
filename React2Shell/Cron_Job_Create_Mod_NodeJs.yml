@@ -1,0 +1,45 @@
+title: Cron Job Created or Modified by Node.js Process
+id: f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c
+status: experimental
+description: Detects creation or modification of cron jobs by Node.js processes for persistence after React2Shell exploitation
+references:
+    - https://www.wiz.io/blog/nextjs-cve-2025-55182-react2shell-deep-dive
+author: TrustedSec
+date: 2025/12/10
+tags:
+    - attack.persistence
+    - attack.t1053.003
+    - attack.privilege_escalation
+logsource:
+    product: linux
+    service: auditd
+detection:
+    selection_file:
+        type: 'SYSCALL'
+        exe|endswith:
+            - '/node'
+            - '/nodejs'
+        name|contains:
+            - '/etc/crontab'
+            - '/etc/cron.d/'
+            - '/etc/cron.daily/'
+            - '/etc/cron.hourly/'
+            - '/etc/cron.monthly/'
+            - '/etc/cron.weekly/'
+            - '/var/spool/cron/'
+        syscall:
+            - 'open'
+            - 'openat'
+            - 'write'
+    selection_crontab:
+        type: 'EXECVE'
+        a0: 'crontab'
+        PPID|endswith:
+            - '/node'
+            - '/nodejs'
+    condition: selection_file or selection_crontab
+falsepositives:
+    - Legitimate scheduled task management by applications
+    - Automated backup or monitoring scripts
+    - Configuration management systems
+level: high
